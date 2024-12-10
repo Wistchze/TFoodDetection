@@ -64,7 +64,7 @@ CORS(app)
 # Define the Mask R-CNN configuration
 class InferenceConfig(Config):
     NAME = "foods_cfg"
-    NUM_CLASSES = 33  # Update based on your dataset (including BG)
+    NUM_CLASSES = 33
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
     DETECTION_MIN_CONFIDENCE = 0.7
@@ -135,7 +135,7 @@ class MaskRCNNInference:
             return detected_classes, annotated_image_base64
 
 # Initialize the Mask R-CNN model (Update the MODEL_PATH accordingly)
-MODEL_PATH = 'logs/mrcnn_food_detection.h5'  # Replace with your actual model path
+MODEL_PATH = 'mrcnn_food_detection.h5'  # Replace with your actual model path
 
 # Ensure the model file exists
 if not os.path.exists(MODEL_PATH):
@@ -175,5 +175,4 @@ def detect():
 
 # Run the Flask app
 if __name__ == '__main__':
-    # Run the app in single-threaded mode as per your decision
     app.run(host='0.0.0.0', port=5000, threaded=False)
