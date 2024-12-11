@@ -3,6 +3,7 @@
 import os
 import threading
 import base64
+import requests
 from flask import Flask, request, jsonify
 import cv2
 import numpy as np
@@ -134,22 +135,29 @@ class MaskRCNNInference:
 
             return detected_classes, annotated_image_base64
 
-# Initialize the Mask R-CNN model (Update the MODEL_PATH accordingly)
-MODEL_PATH = 'mrcnn_food_detection.h5'  # Replace with your actual model path
+# URL of your model file
+MODEL_URL = 'https://storage.googleapis.com/nutrisense/disease/model_h5/mrcnn_food_detection.h5'
+MODEL_PATH = 'mrcnn_food_detection.h5'
 
-# Ensure the model file exists
+# If the model file doesn't exist locally, download it
 if not os.path.exists(MODEL_PATH):
-    raise FileNotFoundError(f'Trained weights not found at {MODEL_PATH}. Please check the path.')
+    print("Model file not found locally. Downloading from:", MODEL_URL)
+    response = requests.get(MODEL_URL, stream=True)
+    if response.status_code == 200:
+        with open(MODEL_PATH, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        print("Model downloaded successfully.")
+    else:
+        raise FileNotFoundError(f"Failed to download model from {MODEL_URL}. Status code: {response.status_code}")
 
 # Initialize the inference model
 mask_rcnn = MaskRCNNInference(model_path=MODEL_PATH, class_names=CLASS_NAMES)
 
-# Helper function to check allowed file extensions
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# New Route: /detect (POST Only) for API Usage
 @app.route('/detect', methods=['POST'])
 def detect():
     if 'image' not in request.files:
@@ -173,6 +181,5 @@ def detect():
     else:
         return jsonify({'error': 'Allowed file types are png, jpg, jpeg, bmp.'}), 400
 
-# Run the Flask app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, threaded=False)
