@@ -12,6 +12,11 @@ from mrcnn.config import Config
 from mrcnn import model as modellib
 from flask_cors import CORS  # Import CORS
 
+import flask
+import flask_cors
+print(flask.__version__)
+print(flask_cors.__version__)
+
 # Suppress TensorFlow logging for cleaner output
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
